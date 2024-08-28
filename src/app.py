@@ -5,18 +5,21 @@ import requests
 
 
 # Seleccionar el recurso a descargar
-url = "https://www.w3schools.com/python/ref_string_split.asp#:~:text=The%20split()%20method%20splits,default%20separator%20is%20any%20whitespace."
+url = "https://ycharts.com/companies/TSLA/revenues"
 
 # Petición para descargar el fichero de Internet
-fichero = requests.get(url, time.sleep(10))
-print(fichero)
+fichero = requests.get(url, time.sleep(10)).text
 
-if fichero:
-    soup = BeautifulSoup( fichero.text , 'html')
-    print(soup)
+if "403 ERROR" in fichero:
+    headers = {'User-Agent':"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36"}
+    request = requests.get(url,headers=headers)
+    time.sleep(10)
+    fichero = request.text
 
-"""td = soup.find_all("td", class_="text-right")
 
-print(td)"""
+
+td = fichero.find_all("td", class_="text-right")
+
+print(td)
 
 
