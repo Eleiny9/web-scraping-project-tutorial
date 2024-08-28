@@ -1,7 +1,34 @@
 import requests
 import time
 import pandas as pd
+import sqlite3
+import matplotlib.pyplot as plt
 from bs4 import BeautifulSoup
+
+
+# Función para conectar a la base de datos
+def conectar_bd():
+    conexion = sqlite3.connect('tesla.bd')
+    return conexion
+
+# Función para crear la tabla (asegurarse de que existe)
+def crear_tabla(conexion):
+    cursor = conexion.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Revenue (
+            date TEXT,
+            revenue REAL
+        )
+    ''')
+    conexion.commit()
+
+# Función para insertar datos en la base de datos
+def insertar_datos(conexion, datos):
+    cursor = conexion.cursor()
+    cursor.executemany('''
+        INSERT INTO Revenue (date, revenue) VALUES (?, ?)
+    ''', datos)
+    conexion.commit()
 
 # Url
 url = "https://ycharts.com/companies/TSLA/revenues"
@@ -44,7 +71,20 @@ if response.status_code == 200:
     # Filtrar los datos para obtener solo los trimestres desde junio de 2009
     data = data[data['Fecha'] >= '2009-06-01']
 
-    # Mostrar los datos
+    # Convertir DataFrame a lista de tuplas
+    datos = list(data.itertuples(index=False, name=None))
+
+    # Conectar a la base de datos y crear la tabla
+    con = conectar_bd()
+    crear_tabla(con)
+
+    # Insertar datos en la base de datos
+    insertar_datos(con, datos)
+
+    # Cerrar la conexión
+    con.close()
+
+    # Opcional: Mostrar el DataFrame
     print(data)
 
 else:
